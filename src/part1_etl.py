@@ -38,3 +38,19 @@ def extract_transform():
     charge_counts_by_offense = arrest_events.groupby(['charge_degree', 'offense_category']).size().reset_index(name='count')
     
     return pred_universe, arrest_events, charge_counts, charge_counts_by_offense
+
+
+def create_felony_charge_df(arrest_events):
+    """Creates the felony charge data frame, which has the columns ['arrest_id', 'has_felony_charge']. 
+    has_felony_charge takes 1 if the arrest has at least 1 felony charge, else it is 0
+    
+    Parameters:
+    - arrest_events: arrest_events data frame
+    
+    Returns:
+    None"""
+    felony_charge = arrest_events[['person_id', 'arrest_id','charge_degree']].groupby(['person_id', 'arrest_id'])['charge_degree'].sum().reset_index(name='charge_degree')
+    felony_charge['has_felony_charge'] = felony_charge.apply(lambda row: 1 if 'felony' in row['charge_degree'] else 0, axis = 1)
+    felony_charge.drop(columns = ['person_id', 'charge_degree'], inplace = True)
+
+    return felony_charge
